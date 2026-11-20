@@ -1,0 +1,277 @@
+
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>EventHub - Eventos para todos</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="styles.css">
+</head>
+
+<body>
+
+    <header class="header">
+
+        <div class="logo">
+            <h1>EventHub</h1>
+        </div>
+
+        <nav class="navbar">
+            <a href="#inicio">Inicio</a>
+            <a href="#eventos">Eventos</a>
+            <a href="#mis-inscripciones">Mis inscripciones</a>
+            <a href="#contacto">Contacto</a>
+        </nav>
+
+    </header>
+
+
+
+    <section id="inicio" class="hero">
+
+        <div class="hero-content">
+
+            <span class="section-tag">Bienvenido a EventHub</span>
+
+            <h2>Descubre eventos. Crea recuerdos.</h2>
+
+            <p>
+                Encuentra actividades académicas, culturales
+                y profesionales en un solo lugar.
+            </p>
+
+            <button id="botonExplorar" class="btn btn-primary">
+                Explorar eventos
+            </button>
+
+        </div>
+
+    </section>
+
+
+    <section id="eventos" class="events-section">
+
+        <div class="section-heading">
+
+            <span class="section-tag">Explora nuestras actividades</span>
+
+            <h2>Eventos disponibles</h2>
+
+            <p>Encuentra el evento ideal para ti.</p>
+
+        </div>
+
+
+        <div class="search-container">
+
+            <input
+                type="text"
+                id="buscadorEventos"
+                placeholder="Buscar un evento..."
+            >
+
+        </div>
+
+
+        <div class="category-filters">
+
+            <button class="filter-btn active" data-filter="todos">
+                Todos
+            </button>
+
+            <button class="filter-btn" data-filter="academico">
+                Académicos
+            </button>
+
+            <button class="filter-btn" data-filter="cultural">
+                Culturales
+            </button>
+
+            <button class="filter-btn" data-filter="profesional">
+                Profesionales
+            </button>
+
+        </div>
+
+
+        <div class="events-container" id="contenedorEventos"></div>
+
+        <p id="sinResultados" hidden>
+            No se encontraron eventos.
+        </p>
+
+    </section>
+
+
+    <section id="detallesEvento" class="details-section" hidden>
+
+        <div class="details-content">
+
+            <button id="cerrarDetalles" class="btn-cerrar">
+                Cerrar
+            </button>
+
+            <span class="section-tag">Conoce más</span>
+
+            <h2 id="detalleTitulo"></h2>
+
+            <p id="detalleCategoria"></p>
+            <p id="detalleFecha"></p>
+            <p id="detalleLugar"></p>
+            <p id="detalleHorario"></p>
+
+            <h3>Sobre este evento</h3>
+
+            <p id="detalleDescripcion"></p>
+
+            <h3>Actividades</h3>
+
+            <ul id="detalleActividades"></ul>
+
+            <a href="#inscripcion"
+               id="detalleInscribirse"
+               class="btn btn-primary">
+                Inscribirme
+            </a>
+
+        </div>
+
+    </section>
+
+
+    <section id="mis-inscripciones" class="my-registrations">
+
+        <div class="section-heading">
+
+            <span class="section-tag">Tu actividad</span>
+
+            <h2>Mis inscripciones</h2>
+
+            <p>Consulta tus eventos registrados.</p>
+
+        </div>
+
+
+        <div id="inscripcion" class="registration-section">
+
+            <h3>Inscríbete a un evento</h3>
+
+            <form id="formularioInscripcion">
+
+                <div class="form-group">
+
+                    <label for="nombre">Nombre completo</label>
+
+                    <input
+                        type="text"
+                        id="nombre"
+                        name="nombre"
+                        required
+                        minlength="3"
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="correo">Correo electrónico</label>
+
+                    <input
+                        type="email"
+                        id="correo"
+                        name="correo"
+                        required
+                    >
+
+                </div>
+
+
+                <div class="form-group">
+
+                    <label for="evento">Selecciona un evento</label>
+
+                    <select id="evento" name="evento" required>
+                        <option value="">Selecciona una opción</option>
+                    </select>
+
+                </div>
+
+
+                <button type="submit" class="btn btn-primary">
+                    Confirmar inscripción
+                </button>
+
+                <p id="mensajeInscripcion" hidden></p>
+
+            </form>
+
+        </div>
+
+
+        <div class="registrations-list">
+
+            <h3>Mis eventos registrados</h3>
+
+            <form id="formularioConsulta" class="consulta-form">
+                <input
+                    type="email"
+                    id="correoConsulta"
+                    placeholder="Escribe tu correo para ver tus inscripciones"
+                    required
+                >
+                <button type="submit" class="btn btn-primary">Consultar</button>
+            </form>
+
+            <p id="mensajeVacio">
+                Todavía no tienes inscripciones.
+            </p>
+
+            <div id="listaInscripciones"></div>
+
+        </div>
+
+    </section>
+
+
+    <section id="contacto" class="contact-section">
+
+        <div class="section-heading">
+
+            <span class="section-tag">Estamos para ayudarte</span>
+
+            <h2>Contáctanos</h2>
+
+            <p>
+                ¿Tienes alguna consulta sobre nuestros eventos?
+                Escríbenos.
+            </p>
+
+        </div>
+
+        <p>Correo: contacto@eventhub.com</p>
+
+    </section>
+
+
+    <footer class="footer">
+
+        <p>© 2026 EventHub. Todos los derechos reservados.</p>
+        <p id="instanciaServidor" class="footer-instance">Conectando con el servidor...</p>
+
+    </footer>
+
+
+    <script src="script.js"></script>
+
+</body>
+
+</html>

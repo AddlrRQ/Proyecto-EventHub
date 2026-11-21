@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Organización - EventHub</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="org-page">
+
+    <div class="ambient-bg" aria-hidden="true">
+        <span class="ambient-orb org-orb-1"></span>
+        <span class="ambient-orb org-orb-2"></span>
+        <span class="ambient-orb org-orb-3"></span>
+    </div>
+
+    <header class="header header-glass">
+        <div class="org-header-brand">
+            <a href="index.html" class="btn-volver-eh" aria-label="Volver al inicio de EventHub">
+                ← EventHub
+            </a>
+            <div id="headerLogoOrg" class="org-header-logo" aria-hidden="true"></div>
+            <h1 id="headerNombreOrg" class="org-header-title">Cargando...</h1>
+        </div>
+
+        <nav class="navbar" aria-label="Navegación de la organización">
+            <a href="#sobre-nosotros">Sobre nosotros</a>
+            <a href="#eventos">Eventos</a>
+            <a href="#inscripcion">Inscripción</a>
+            <a href="#contacto">Contacto</a>
+        </nav>
+    </header>
+
+    <main>
+        <section id="estadoOrgError" class="org-error-section" hidden>
+            <div class="org-error-card glass-panel">
+                <span class="section-tag">EventHub</span>
+                <h2 id="tituloOrgError">Organización no encontrada</h2>
+                <p id="mensajeOrgError">No pudimos cargar este espacio. Verifica el enlace o explora otras organizaciones.</p>
+                <a href="index.html" class="btn btn-primary">Volver a EventHub</a>
+            </div>
+        </section>
+
+        <div id="contenidoMicrositio" hidden>
+            <section id="inicio" class="hero hero-glass org-hero">
+                <div id="orgBannerWrap" class="org-hero-banner-wrap" aria-hidden="true"></div>
+                <div class="hero-content glass-panel org-hero-content">
+                    <div id="orgHeroLogo" class="org-hero-logo"></div>
+                    <span class="section-tag org-tag">Espacio en EventHub · Demostración académica</span>
+                    <h2 id="orgNombreHero"></h2>
+                    <p id="orgDescripcionCorta"></p>
+                    <div class="hero-actions">
+                        <button id="botonExplorar" type="button" class="btn btn-primary org-btn-primario">
+                            Ver próximos eventos
+                        </button>
+                        <a href="index.html#mis-inscripciones" class="btn btn-glass">
+                            Mis inscripciones
+                        </a>
+                    </div>
+                </div>
+            </section>
+
+            <section id="sobre-nosotros" class="org-about-section">
+                <div class="org-about-card glass-panel">
+                    <span class="section-tag org-tag">Sobre nosotros</span>
+                    <h2 id="orgSobreTitulo">Conoce nuestra organización</h2>
+                    <p id="orgDescripcionCompleta"></p>
+                </div>
+            </section>
+
+            <section id="eventos" class="events-section">
+                <div class="section-heading">
+                    <span class="section-tag org-tag">Agenda</span>
+                    <h2>Próximos eventos</h2>
+                    <p>Eventos ficticios de demostración académica en este espacio.</p>
+                </div>
+
+                <div class="search-container">
+                    <label for="buscadorEventos" class="sr-only">Buscar eventos de esta organización</label>
+                    <input
+                        type="search"
+                        id="buscadorEventos"
+                        placeholder="Buscar un evento por título o lugar..."
+                        autocomplete="off"
+                    >
+                </div>
+
+                <div id="filtrosCategorias" class="category-filters" role="group" aria-label="Filtrar eventos por categoría">
+                    <button type="button" class="filter-btn active" data-filter="todos">Todos</button>
+                </div>
+
+                <div class="events-container" id="contenedorEventos" aria-live="polite"></div>
+
+                <p id="sinResultados" class="estado-mensaje" role="status" hidden>
+                    No se encontraron eventos.
+                </p>
+            </section>
+
+            <section id="detallesEvento" class="details-section" hidden>
+                <div class="details-content glass-panel">
+                    <button id="cerrarDetalles" type="button" class="btn-cerrar">
+                        Cerrar
+                    </button>
+
+                    <span class="section-tag org-tag">Detalle del evento</span>
+                    <h2 id="detalleTitulo"></h2>
+
+                    <div class="detalle-meta">
+                        <p id="detalleCategoria"></p>
+                        <p id="detalleFecha"></p>
+                        <p id="detalleLugar"></p>
+                        <p id="detalleHorario"></p>
+                        <p id="detalleCupos"></p>
+                    </div>
+
+                    <h3>Sobre este evento</h3>
+                    <p id="detalleDescripcion"></p>
+
+                    <h3>Actividades</h3>
+                    <ul id="detalleActividades"></ul>
+
+                    <div class="detalle-acciones">
+                        <button type="button" id="detalleInscribirse" class="btn btn-primary org-btn-primario">
+                            Inscribirme
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            <section id="inscripcion" class="my-registrations org-registration-wrap">
+                <div class="section-heading">
+                    <span class="section-tag org-tag">Participa</span>
+                    <h2>Inscripción al evento</h2>
+                    <p>Completa tus datos para reservar un cupo en este micrositio.</p>
+                </div>
+
+                <div class="registration-section">
+                    <form id="formularioInscripcion" class="glass-panel">
+                        <div class="form-group">
+                            <label for="nombre">Nombre completo</label>
+                            <input
+                                type="text"
+                                id="nombre"
+                                name="nombre"
+                                required
+                                minlength="3"
+                                maxlength="100"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="correo">Correo electrónico</label>
+                            <input
+                                type="email"
+                                id="correo"
+                                name="correo"
+                                required
+                                maxlength="150"
+                            >
+                        </div>
+
+                        <div class="form-group">
+                            <label for="evento">Selecciona un evento</label>
+                            <select id="evento" name="evento" required>
+                                <option value="">Selecciona una opción</option>
+                            </select>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary org-btn-primario">
+                            Confirmar inscripción
+                        </button>
+
+                        <p id="mensajeInscripcion" role="status" hidden></p>
+                    </form>
+
+                    <p class="org-mis-inscripciones-link">
+                        ¿Ya te inscribiste? <a href="index.html#mis-inscripciones">Consulta tus inscripciones en EventHub</a>.
+                    </p>
+                </div>
+            </section>
+
+            <section id="contacto" class="contact-section">
+                <div class="contact-glass-card glass-panel">
+                    <div class="section-heading">
+                        <span class="section-tag org-tag">Contacto</span>
+                        <h2>Comunícate con la organización</h2>
+                        <p>Canales oficiales publicados por la organización.</p>
+                    </div>
+                    <p id="orgCorreoContacto" class="contact-mail"></p>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <footer class="footer">
+        <p id="footerOrgTexto">Espacio oficial en EventHub · <a href="index.html" class="footer-home-link">Volver a EventHub</a></p>
+        <p id="instanciaServidor" class="footer-instance">Conectando con el servidor...</p>
+    </footer>
+
+    <script src="js/common.js"></script>
+    <script src="js/organizacion.js"></script>
+
+</body>
+
+</html>

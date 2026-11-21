@@ -178,27 +178,6 @@ FROM dbo.Eventos e
 LEFT JOIN dbo.Actividades_Evento a ON a.id_evento = e.id_evento
 GROUP BY e.titulo;
 
-DECLARE @id_part INT;
-IF NOT EXISTS (SELECT 1 FROM dbo.Participantes WHERE correo = N'prueba@eventhub.com')
-    INSERT INTO dbo.Participantes (nombre_completo, correo) VALUES (N'Participante de Prueba', N'prueba@eventhub.com');
-SELECT @id_part = id_participante FROM dbo.Participantes WHERE correo = N'prueba@eventhub.com';
-
-INSERT INTO dbo.Inscripciones (id_participante, id_evento)
-SELECT @id_part, e.id_evento
-FROM dbo.Eventos e
-WHERE e.titulo = N'Festival creativo'
-  AND NOT EXISTS (SELECT 1 FROM dbo.Inscripciones i
-                  WHERE i.id_participante = @id_part AND i.id_evento = e.id_evento);
-
-SELECT i.id_inscripcion, p.nombre_completo, p.correo, e.titulo AS evento,
-       c.nombre AS categoria, i.estado, i.fecha_inscripcion
-FROM dbo.Inscripciones i
-INNER JOIN dbo.Participantes p ON p.id_participante = i.id_participante
-INNER JOIN dbo.Eventos e       ON e.id_evento       = i.id_evento
-INNER JOIN dbo.Categorias c    ON c.id_categoria    = e.id_categoria;
-
-DELETE FROM dbo.Participantes WHERE correo = N'prueba@eventhub.com';
-
 SELECT id_admin, usuario, nombre_admin, LEFT(password_hash, 12) + N'...' AS hash_parcial
 FROM dbo.Administradores;
 GO

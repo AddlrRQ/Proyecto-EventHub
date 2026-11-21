@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub - Portal de Organizaciones</title>
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+    <link rel="stylesheet" href="../css/styles.css">
+</head>
+
+<body class="portal-page">
+
+    <div class="ambient-bg" aria-hidden="true">
+        <span class="ambient-orb org-orb-1"></span>
+        <span class="ambient-orb org-orb-2"></span>
+        <span class="ambient-orb org-orb-3"></span>
+    </div>
+
+    <header class="header header-glass">
+        <div class="org-header-brand">
+            <a href="../index.html" class="btn-volver-eh">← EventHub</a>
+            <h1 id="portalTituloHeader" class="org-header-title">Portal de Organizaciones</h1>
+        </div>
+
+        <nav class="navbar" aria-label="Navegación del portal">
+            <a href="#resumen" id="navResumen" hidden>Resumen</a>
+            <a href="#mi-organizacion" id="navOrganizacion" hidden>Mi organización</a>
+            <a href="#mis-eventos" id="navEventos" hidden>Mis eventos</a>
+            <a href="#inscripciones" id="navInscripciones" hidden>Inscripciones</a>
+            <a href="../index.html" id="enlaceMicrositio" hidden>Ver micrositio</a>
+            <a href="#" id="botonSalir" hidden>Cerrar sesión</a>
+        </nav>
+    </header>
+
+    <main class="portal-main">
+
+        <section id="seccionLogin" class="portal-box glass-panel">
+            <span class="section-tag">Acceso para organizaciones</span>
+            <h2>Inicia sesión en tu portal</h2>
+            <p class="portal-subtitulo">Administra el perfil, branding, eventos e inscripciones de tu organización.</p>
+
+            <form id="formularioLogin">
+                <div class="form-group">
+                    <label for="usuario">Usuario</label>
+                    <input type="text" id="usuario" required autocomplete="username">
+                </div>
+                <div class="form-group">
+                    <label for="password">Contraseña</label>
+                    <input type="password" id="password" required autocomplete="current-password">
+                </div>
+                <button type="submit" class="btn btn-primary" style="width: 100%">Iniciar sesión</button>
+                <p id="msgLogin" class="portal-msg mensaje-error" role="alert" hidden></p>
+            </form>
+        </section>
+
+        <section id="seccionPanel" hidden>
+
+            <p id="msgCms" class="portal-msg" role="status" hidden></p>
+
+            <section id="resumen" class="portal-section">
+                <div class="portal-section-head">
+                    <span class="section-tag">Resumen</span>
+                    <h2 id="resumenOrgNombre">Tu organización</h2>
+                </div>
+
+                <div class="portal-stats-grid">
+                    <article class="portal-stat glass-panel">
+                        <span class="portal-stat-label">Total de eventos</span>
+                        <strong id="statTotalEventos" class="portal-stat-value">0</strong>
+                    </article>
+                    <article class="portal-stat glass-panel">
+                        <span class="portal-stat-label">Eventos activos</span>
+                        <strong id="statEventosActivos" class="portal-stat-value">0</strong>
+                    </article>
+                    <article class="portal-stat glass-panel">
+                        <span class="portal-stat-label">Inscripciones vigentes</span>
+                        <strong id="statTotalInscripciones" class="portal-stat-value">0</strong>
+                    </article>
+                </div>
+            </section>
+
+            <section id="mi-organizacion" class="portal-section">
+                <div class="portal-box glass-panel">
+                    <h3>Mi organización y personalización</h3>
+
+                    <form id="formularioPerfil">
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="perfilNombre">Nombre</label>
+                                <input type="text" id="perfilNombre" required minlength="2" maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="perfilCorreo">Correo o enlace oficial (https://)</label>
+                                <input type="text" id="perfilCorreo" required maxlength="150">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="perfilDescripcionCorta">Descripción corta</label>
+                            <input type="text" id="perfilDescripcionCorta" required minlength="5" maxlength="200">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="perfilDescripcion">Descripción completa</label>
+                            <textarea id="perfilDescripcion" required minlength="10" maxlength="2000"></textarea>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="perfilLogoUrl">URL del logo</label>
+                                <input type="text" id="perfilLogoUrl" maxlength="500" placeholder="https://... o /img/demo/logo.svg">
+                            </div>
+                            <div class="form-group">
+                                <label for="perfilBannerUrl">URL del banner</label>
+                                <input type="text" id="perfilBannerUrl" maxlength="500" placeholder="https://... o /img/demo/banner.svg">
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="perfilColorPrimario">Color principal</label>
+                                <div class="color-input-row">
+                                    <input type="color" id="perfilColorPrimario" value="#6C4AE4">
+                                    <input type="text" id="perfilColorPrimarioHex" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$" aria-label="Código hexadecimal color principal">
+                                </div>
+                            </div>
+                            <div class="form-group">
+                                <label for="perfilColorSecundario">Color secundario</label>
+                                <div class="color-input-row">
+                                    <input type="color" id="perfilColorSecundario" value="#FFCA58">
+                                    <input type="text" id="perfilColorSecundarioHex" maxlength="7" pattern="^#[0-9A-Fa-f]{6}$" aria-label="Código hexadecimal color secundario">
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="portal-preview-wrap">
+                            <span class="portal-preview-label">Vista previa en EventHub</span>
+                            <div id="previewBranding" class="org-banner-card glass-panel portal-preview-card">
+                                <div class="org-accent-strip" aria-hidden="true"></div>
+                                <div id="previewLogo" class="org-logo-wrap"></div>
+                                <div class="org-card-body">
+                                    <div class="org-card-head">
+                                        <h4 id="previewNombre">Organización</h4>
+                                    </div>
+                                    <p id="previewDescCorta" class="org-card-desc">Descripción corta</p>
+                                </div>
+                                <span id="previewBoton" class="btn btn-primary org-btn-primario">Explorar</span>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary">Guardar perfil</button>
+                    </form>
+                </div>
+            </section>
+
+            <section id="mis-eventos" class="portal-section">
+                <div class="portal-box glass-panel">
+                    <h3 id="tituloFormulario">Crear evento</h3>
+
+                    <form id="formularioEvento">
+                        <div class="form-group">
+                            <label for="titulo">Título</label>
+                            <input type="text" id="titulo" required minlength="3" maxlength="150">
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="id_categoria">Categoría</label>
+                                <select id="id_categoria" required></select>
+                            </div>
+                            <div class="form-group">
+                                <label for="fecha_evento">Fecha</label>
+                                <input type="date" id="fecha_evento" required>
+                            </div>
+                        </div>
+
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="lugar">Lugar</label>
+                                <input type="text" id="lugar" required maxlength="100">
+                            </div>
+                            <div class="form-group">
+                                <label for="horario">Horario</label>
+                                <input type="text" id="horario" required maxlength="50" placeholder="9:00 a. m. - 5:00 p. m.">
+                            </div>
+                        </div>
+
+                        <div class="form-group">
+                            <label for="capacidad">Capacidad (aforo máximo)</label>
+                            <input type="number" id="capacidad" required min="1" max="100000" value="100">
+                        </div>
+
+                        <div class="form-group">
+                            <label for="descripcion">Descripción</label>
+                            <textarea id="descripcion" required maxlength="1000"></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <label>Actividades</label>
+                            <div id="listaActividades"></div>
+                            <button type="button" id="botonAgregarActividad" class="btn btn-secundario">+ Agregar actividad</button>
+                        </div>
+
+                        <div class="form-group check-row">
+                            <input type="checkbox" id="activo" checked>
+                            <label for="activo">Evento visible en el micrositio</label>
+                        </div>
+
+                        <div class="acciones">
+                            <button type="submit" class="btn btn-primary" id="botonGuardar">Guardar evento</button>
+                            <button type="button" class="btn btn-secundario" id="botonCancelar" hidden>Cancelar edición</button>
+                        </div>
+                    </form>
+                </div>
+
+                <div class="admin-lista">
+                    <h3>Mis eventos</h3>
+                    <p class="nota-admin">Desactivar oculta el evento del micrositio; Eliminar lo borra de la base de datos junto con sus inscripciones.</p>
+                    <p id="vacioEventos" class="nota-admin" hidden>Tu organización aún no tiene eventos registrados.</p>
+                    <div id="listaEventosAdmin"></div>
+                </div>
+            </section>
+
+            <section id="inscripciones" class="portal-section">
+                <div class="admin-lista">
+                    <h3>Inscripciones de mi organización</h3>
+                    <p id="vacioInscripciones" class="nota-admin">Aún no hay inscripciones registradas en tus eventos.</p>
+                    <div id="listaInscripcionesAdmin"></div>
+                </div>
+            </section>
+
+        </section>
+
+    </main>
+
+    <footer class="footer">
+        <p>© 2026 EventHub · Portal de Organizaciones.</p>
+        <p id="instanciaServidor" class="footer-instance">Conectando con el servidor...</p>
+    </footer>
+
+    <script src="../js/common.js"></script>
+    <script src="../js/portal.js"></script>
+
+</body>
+
+</html>

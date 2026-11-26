@@ -143,15 +143,188 @@ function formatearFecha(fechaISO, conAnio) {
     return fecha.toLocaleDateString('es-PE', opciones);
 }
 
-async function consultarInstancia(selector) {
-    const nodo = document.querySelector(selector || '#instanciaServidor');
-    if (!nodo) return;
-    try {
-        const salud = await api('/api/health');
-        nodo.textContent =
-            'Atendido por: ' + salud.servidor +
-            ' · Base de datos: ' + salud.baseDatos;
-    } catch (error) {
-        nodo.textContent = 'Servidor no disponible';
+const INTERVALO_INDICADOR_INSTANCIA_MS = 300000;
+
+function crearControladorPolling(opciones) {
+    const opts = opciones || {};
+    const tarea = opts.tarea;
+    const intervaloMs = Number(opts.intervaloMs);
+    const revalidarAlMostrar = opts.revalidarAlMostrar !== false;
+    const doc = opts.doc !== undefined ? opts.doc : (typeof document !== 'undefined' ? document : null);
+    const win = opts.win !== undefined ? opts.win : (typeof window !== 'undefined' ? window : null);
+    const setIntervalFn = opts.setIntervalFn || setInterval;
+    const clearIntervalFn = opts.clearIntervalFn || clearInterval;
+
+    let activo = false;
+    let detenidoManualmente = false;
+    let temporizador = null;
+    let enCurso = null;
+    let colaForzada = null;
+    let listenersRegistrados = false;
+
+    function limpiarIntervalo() {
+        if (temporizador !== null) {
+            clearIntervalFn(temporizador);
+            temporizador = null;
+        }
     }
+
+    function ejecutar(opcionesEjec) {
+        const forzar = Boolean(opcionesEjec && opcionesEjec.forzar);
+        if (enCurso) {
+            if (forzar) {
+                if (!colaForzada) {
+                    colaForzada = enCurso.then(function () {
+                        colaForzada = null;
+                        if (detenidoManualmente) return;
+                        return ejecutar({ forzar: false });
+                    });
+                }
+                return colaForzada;
+            }
+            return enCurso;
+        }
+
+        enCurso = (async function () {
+            try {
+                return await tarea();
+            } catch (error) {
+                // Los errores transitorios se manejan dentro de cada tarea sin detener el polling.
+            } finally {
+                enCurso = null;
+            }
+        })();
+
+        return enCurso;
+    }
+
+    function programarIntervalo() {
+        limpiarIntervalo();
+        if (!activo || !Number.isFinite(intervaloMs) || intervaloMs <= 0) return;
+        if (doc && doc.hidden) return;
+
+        temporizador = setIntervalFn(function () {
+            if (!activo || (doc && doc.hidden)) return;
+            ejecutar({ forzar: false });
+        }, intervaloMs);
+    }
+
+    function alCambiarVisibilidad() {
+        if (!activo || !doc) return;
+        if (doc.hidden) {
+            limpiarIntervalo();
+            return;
+        }
+        programarIntervalo();
+        if (revalidarAlMostrar) {
+            ejecutar({ forzar: true });
+        }
+    }
+
+    function alDescargarPagina() {
+        detener();
+    }
+
+    function registrarListeners() {
+        if (listenersRegistrados) return;
+        if (doc && typeof doc.addEventListener === 'function') {
+            doc.addEventListener('visibilitychange', alCambiarVisibilidad);
+        }
+        if (win && typeof win.addEventListener === 'function') {
+            win.addEventListener('pagehide', alDescargarPagina);
+        }
+        listenersRegistrados = true;
+    }
+
+    function quitarListeners() {
+        if (!listenersRegistrados) return;
+        if (doc && typeof doc.removeEventListener === 'function') {
+            doc.removeEventListener('visibilitychange', alCambiarVisibilidad);
+        }
+        if (win && typeof win.removeEventListener === 'function') {
+            win.removeEventListener('pagehide', alDescargarPagina);
+        }
+        listenersRegistrados = false;
+    }
+
+    function iniciar(opcionesInicio) {
+        const optsIni = opcionesInicio || {};
+        activo = true;
+        detenidoManualmente = false;
+        registrarListeners();
+        if (optsIni.ejecutarInmediato) {
+            ejecutar({ forzar: false });
+        }
+        programarIntervalo();
+    }
+
+    function detener() {
+        activo = false;
+        detenidoManualmente = true;
+        limpiarIntervalo();
+        quitarListeners();
+    }
+
+    return {
+        iniciar: iniciar,
+        detener: detener,
+        ejecutar: ejecutar,
+        estaActivo: function () { return activo; },
+        tieneTemporizadorActivo: function () { return temporizador !== null; },
+        estaEnCurso: function () { return enCurso !== null; }
+    };
+}
+
+const consultasInstanciaEnCurso = new Map();
+const controladoresInstancia = new Map();
+
+async function consultarInstancia(selector) {
+    const claveSelector = selector || '#instanciaServidor';
+    const nodo = typeof document !== 'undefined' ? document.querySelector(claveSelector) : null;
+    if (!nodo) return;
+    if (consultasInstanciaEnCurso.has(claveSelector)) {
+        return consultasInstanciaEnCurso.get(claveSelector);
+    }
+
+    const promesa = (async function () {
+        try {
+            const salud = await api('/api/health');
+            nodo.textContent =
+                'Atendido por: ' + salud.servidor +
+                ' · Base de datos: ' + salud.baseDatos;
+        } catch (error) {
+            nodo.textContent = 'Servidor no disponible';
+        } finally {
+            consultasInstanciaEnCurso.delete(claveSelector);
+        }
+    })();
+
+    consultasInstanciaEnCurso.set(claveSelector, promesa);
+    return promesa;
+}
+
+function iniciarIndicadorInstancia(selector, opciones) {
+    const claveSelector = selector || '#instanciaServidor';
+    const opts = opciones || {};
+    const intervaloMs = opts.intervaloMs !== undefined ? opts.intervaloMs : INTERVALO_INDICADOR_INSTANCIA_MS;
+
+    let controlador = controladoresInstancia.get(claveSelector);
+    if (!controlador) {
+        controlador = crearControladorPolling({
+            tarea: function () { return consultarInstancia(claveSelector); },
+            intervaloMs: intervaloMs,
+            revalidarAlMostrar: true
+        });
+        controladoresInstancia.set(claveSelector, controlador);
+    }
+
+    controlador.iniciar({ ejecutarInmediato: true });
+    return controlador;
+}
+
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = {
+        INTERVALO_INDICADOR_INSTANCIA_MS: INTERVALO_INDICADOR_INSTANCIA_MS,
+        crearControladorPolling: crearControladorPolling
+    };
 }

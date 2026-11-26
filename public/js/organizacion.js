@@ -40,11 +40,17 @@ const botonInscribirDesdeDetalles = document.querySelector('#detalleInscribirse'
 const formulario = document.querySelector('#formularioInscripcion');
 const mensajeInscripcion = document.querySelector('#mensajeInscripcion');
 
+const INTERVALO_POLLING_EVENTOS_MS = 60000;
+
 let organizacionActual = null;
 let eventos = {};
 let ultimaHuellaEventos = '';
 let categoriaSeleccionada = 'todos';
 let eventoEnDetalle = null;
+let cargaEventosEnCurso = null;
+let colaRevalidacionEventos = null;
+let huboErrorCargaEventos = false;
+let controladorPollingEventos = null;
 
 if (botonExplorar && seccionEventos) {
     botonExplorar.addEventListener('click', function () {
@@ -236,7 +242,7 @@ function mostrarEventos(lista) {
 
     if (eventoEnDetalle !== null) {
         if (eventos[eventoEnDetalle]) {
-            actualizarMetaDetalle(eventos[eventoEnDetalle]);
+            actualizarDetalleAbierto(eventos[eventoEnDetalle]);
         } else {
             eventoEnDetalle = null;
             seccionDetalles.hidden = true;
@@ -244,6 +250,23 @@ function mostrarEventos(lista) {
     }
 
     filtrarEventos();
+}
+
+function actualizarDetalleAbierto(informacion) {
+    detalleTitulo.textContent = informacion.titulo;
+    detalleCategoria.textContent = 'Categoría: ' + informacion.categoria_nombre;
+    detalleFecha.textContent = 'Fecha: ' + formatearFecha(informacion.fecha_evento, true);
+    detalleLugar.textContent = 'Lugar: ' + informacion.lugar;
+    detalleHorario.textContent = 'Horario: ' + informacion.horario;
+    actualizarMetaDetalle(informacion);
+    detalleDescripcion.textContent = informacion.descripcion;
+
+    detalleActividades.replaceChildren();
+    informacion.actividades.forEach(function (actividad) {
+        const elemento = document.createElement('li');
+        elemento.textContent = actividad.descripcion_actividad;
+        detalleActividades.appendChild(elemento);
+    });
 }
 
 function actualizarMetaDetalle(informacion) {
@@ -262,21 +285,7 @@ function mostrarDetalles(idEvento) {
     if (!informacion) return;
 
     eventoEnDetalle = informacion.id_evento;
-    detalleTitulo.textContent = informacion.titulo;
-    detalleCategoria.textContent = 'Categoría: ' + informacion.categoria_nombre;
-    detalleFecha.textContent = 'Fecha: ' + formatearFecha(informacion.fecha_evento, true);
-    detalleLugar.textContent = 'Lugar: ' + informacion.lugar;
-    detalleHorario.textContent = 'Horario: ' + informacion.horario;
-    actualizarMetaDetalle(informacion);
-
-    detalleDescripcion.textContent = informacion.descripcion;
-    detalleActividades.replaceChildren();
-
-    informacion.actividades.forEach(function (actividad) {
-        const elemento = document.createElement('li');
-        elemento.textContent = actividad.descripcion_actividad;
-        detalleActividades.appendChild(elemento);
-    });
+    actualizarDetalleAbierto(informacion);
 
     seccionDetalles.hidden = false;
     seccionDetalles.scrollIntoView({ behavior: 'smooth' });
@@ -329,26 +338,53 @@ async function cargarCategorias() {
     }
 }
 
-async function cargarEventos() {
+async function cargarEventos(opciones) {
     if (!organizacionActual) return;
-    try {
-        const lista = await api('/api/organizaciones/' + encodeURIComponent(slugOrg) + '/eventos');
-        mensajeSinResultados.textContent = 'No se encontraron eventos.';
 
-        const huella = JSON.stringify(lista);
-        if (huella !== ultimaHuellaEventos) {
-            ultimaHuellaEventos = huella;
-            mostrarEventos(lista);
-        }
+    const opts = opciones || {};
+    const forzar = Boolean(opts.forzar);
 
-        if (lista.length === 0) {
-            mensajeSinResultados.textContent = 'Esta organización aún no tiene eventos publicados.';
-            mensajeSinResultados.hidden = false;
+    if (cargaEventosEnCurso) {
+        if (forzar) {
+            if (!colaRevalidacionEventos) {
+                colaRevalidacionEventos = cargaEventosEnCurso.then(function () {
+                    colaRevalidacionEventos = null;
+                    return cargarEventos({ forzar: false });
+                });
+            }
+            return colaRevalidacionEventos;
         }
-    } catch (error) {
-        mensajeSinResultados.textContent = 'No se pudieron cargar los eventos: ' + error.message;
-        mensajeSinResultados.hidden = false;
+        return cargaEventosEnCurso;
     }
+
+    cargaEventosEnCurso = (async function () {
+        try {
+            const lista = await api('/api/organizaciones/' + encodeURIComponent(slugOrg) + '/eventos');
+            mensajeSinResultados.textContent = 'No se encontraron eventos.';
+
+            const huella = JSON.stringify(lista);
+            if (huella !== ultimaHuellaEventos) {
+                ultimaHuellaEventos = huella;
+                mostrarEventos(lista);
+            } else if (huboErrorCargaEventos) {
+                filtrarEventos();
+            }
+            huboErrorCargaEventos = false;
+
+            if (lista.length === 0) {
+                mensajeSinResultados.textContent = 'Esta organización aún no tiene eventos publicados.';
+                mensajeSinResultados.hidden = false;
+            }
+        } catch (error) {
+            huboErrorCargaEventos = true;
+            mensajeSinResultados.textContent = 'No se pudieron cargar los eventos: ' + error.message;
+            mensajeSinResultados.hidden = false;
+        } finally {
+            cargaEventosEnCurso = null;
+        }
+    })();
+
+    return cargaEventosEnCurso;
 }
 
 buscador.addEventListener('input', filtrarEventos);
@@ -423,19 +459,30 @@ formulario.addEventListener('submit', async function (evento) {
         formulario.reset();
 
         ultimaHuellaEventos = '';
-        await cargarEventos();
+        await cargarEventos({ forzar: true });
     } catch (error) {
         mensajeInscripcion.classList.add('mensaje-error');
         mensajeInscripcion.textContent = error.message;
         mensajeInscripcion.hidden = false;
         if (error.message.toLowerCase().includes('agotado') || error.message.toLowerCase().includes('capacidad')) {
             ultimaHuellaEventos = '';
-            cargarEventos();
+            cargarEventos({ forzar: true });
         }
     } finally {
         botonConfirmar.disabled = false;
     }
 });
+
+function iniciarPollingEventos() {
+    if (!controladorPollingEventos) {
+        controladorPollingEventos = crearControladorPolling({
+            tarea: function () { return cargarEventos({ forzar: false }); },
+            intervaloMs: INTERVALO_POLLING_EVENTOS_MS,
+            revalidarAlMostrar: true
+        });
+    }
+    controladorPollingEventos.iniciar({ ejecutarInmediato: false });
+}
 
 async function iniciarMicrositio() {
     if (!slugOrg) {
@@ -450,16 +497,12 @@ async function iniciarMicrositio() {
         const org = await api('/api/organizaciones/' + encodeURIComponent(slugOrg));
         aplicarIdentidadOrganizacion(org);
         await cargarCategorias();
-        await cargarEventos();
-
-        setInterval(function () {
-            cargarEventos();
-            consultarInstancia('#instanciaServidor');
-        }, 10000);
+        await cargarEventos({ forzar: true });
+        iniciarPollingEventos();
     } catch (error) {
         mostrarErrorOrganizacion('Organización no disponible', error.message);
     }
 }
 
-consultarInstancia('#instanciaServidor');
+iniciarIndicadorInstancia('#instanciaServidor');
 iniciarMicrositio();

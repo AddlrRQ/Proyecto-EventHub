@@ -44,6 +44,8 @@ const selectCategoria = document.querySelector('#id_categoria');
 
 let eventoEditando = null;
 let eventosAdmin = {};
+let cargaEventosAdminEnCurso = null;
+let cargaInscripcionesAdminEnCurso = null;
 
 async function apiPortal(ruta, opciones) {
     const cabeceras = { 'Content-Type': 'application/json' };
@@ -393,19 +395,27 @@ function crearTarjetaEvento(ev) {
 }
 
 async function cargarEventos() {
-    try {
-        const lista = await apiPortal('/api/eventos?todos=1');
-        eventosAdmin = {};
-        listaEventosAdmin.replaceChildren();
-        vacioEventos.hidden = lista.length > 0;
+    if (cargaEventosAdminEnCurso) return cargaEventosAdminEnCurso;
 
-        lista.forEach(function (ev) {
-            eventosAdmin[ev.id_evento] = ev;
-            listaEventosAdmin.appendChild(crearTarjetaEvento(ev));
-        });
-    } catch (error) {
-        avisar(error.message, true);
-    }
+    cargaEventosAdminEnCurso = (async function () {
+        try {
+            const lista = await apiPortal('/api/eventos?todos=1');
+            eventosAdmin = {};
+            listaEventosAdmin.replaceChildren();
+            vacioEventos.hidden = lista.length > 0;
+
+            lista.forEach(function (ev) {
+                eventosAdmin[ev.id_evento] = ev;
+                listaEventosAdmin.appendChild(crearTarjetaEvento(ev));
+            });
+        } catch (error) {
+            avisar(error.message, true);
+        } finally {
+            cargaEventosAdminEnCurso = null;
+        }
+    })();
+
+    return cargaEventosAdminEnCurso;
 }
 
 function editarEvento(ev) {
@@ -478,35 +488,43 @@ listaEventosAdmin.addEventListener('click', async function (evento) {
 });
 
 async function cargarInscripciones() {
-    try {
-        const lista = await apiPortal('/api/inscripciones');
-        listaInscripcionesAdmin.replaceChildren();
-        vacioInscripciones.hidden = lista.length > 0;
+    if (cargaInscripcionesAdminEnCurso) return cargaInscripcionesAdminEnCurso;
 
-        lista.forEach(function (i) {
-            const tarjeta = document.createElement('article');
-            tarjeta.className = 'registration-card glass-panel';
+    cargaInscripcionesAdminEnCurso = (async function () {
+        try {
+            const lista = await apiPortal('/api/inscripciones');
+            listaInscripcionesAdmin.replaceChildren();
+            vacioInscripciones.hidden = lista.length > 0;
 
-            const t = document.createElement('h3');
-            t.textContent = i.evento;
+            lista.forEach(function (i) {
+                const tarjeta = document.createElement('article');
+                tarjeta.className = 'registration-card glass-panel';
 
-            const p = document.createElement('p');
-            p.textContent = i.nombre_completo + ' · ' + i.correo + ' · ' + i.estado;
+                const t = document.createElement('h3');
+                t.textContent = i.evento;
 
-            const b = document.createElement('button');
-            b.type = 'button';
-            b.classList.add('btn-eliminar');
-            b.textContent = 'Eliminar inscripción';
-            b.dataset.id = i.id_inscripcion;
+                const p = document.createElement('p');
+                p.textContent = i.nombre_completo + ' · ' + i.correo + ' · ' + i.estado;
 
-            tarjeta.appendChild(t);
-            tarjeta.appendChild(p);
-            tarjeta.appendChild(b);
-            listaInscripcionesAdmin.appendChild(tarjeta);
-        });
-    } catch (error) {
-        avisar(error.message, true);
-    }
+                const b = document.createElement('button');
+                b.type = 'button';
+                b.classList.add('btn-eliminar');
+                b.textContent = 'Eliminar inscripción';
+                b.dataset.id = i.id_inscripcion;
+
+                tarjeta.appendChild(t);
+                tarjeta.appendChild(p);
+                tarjeta.appendChild(b);
+                listaInscripcionesAdmin.appendChild(tarjeta);
+            });
+        } catch (error) {
+            avisar(error.message, true);
+        } finally {
+            cargaInscripcionesAdminEnCurso = null;
+        }
+    })();
+
+    return cargaInscripcionesAdminEnCurso;
 }
 
 listaInscripcionesAdmin.addEventListener('click', async function (evento) {
@@ -542,7 +560,7 @@ async function iniciarPanel() {
     }
 }
 
-consultarInstancia('#instanciaServidor');
+iniciarIndicadorInstancia('#instanciaServidor');
 if (token) {
     iniciarPanel();
 }

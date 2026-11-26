@@ -41,6 +41,7 @@ let organizacionesCargadas = [];
 let organizacionesFiltradas = [];
 let limiteVisibleOrgs = ORGS_INICIALES;
 let correoActual = '';
+let secuenciaConsultaInscripciones = 0;
 
 if (botonExplorarOrgs && seccionOrganizaciones) {
     botonExplorarOrgs.addEventListener('click', function () {
@@ -276,10 +277,13 @@ async function cargarInscripciones() {
         return;
     }
 
+    const tokenConsulta = ++secuenciaConsultaInscripciones;
     try {
         const lista = await api('/api/inscripciones?correo=' + encodeURIComponent(correoActual));
+        if (tokenConsulta !== secuenciaConsultaInscripciones) return;
         mostrarInscripciones(lista);
     } catch (error) {
+        if (tokenConsulta !== secuenciaConsultaInscripciones) return;
         listaInscripciones.replaceChildren();
         mensajeVacio.textContent = error.message;
         mensajeVacio.hidden = false;
@@ -345,7 +349,4 @@ listaInscripciones.addEventListener('click', async function (evento) {
 
 cargarOrganizaciones();
 cargarInscripciones();
-consultarInstancia('#instanciaServidor');
-setInterval(function () {
-    consultarInstancia('#instanciaServidor');
-}, 10000);
+iniciarIndicadorInstancia('#instanciaServidor');
